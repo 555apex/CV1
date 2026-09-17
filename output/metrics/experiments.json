@@ -1,0 +1,383 @@
+{
+  "exp1": {
+    "name": "exp1_4点等价性",
+    "degenerate_check": [],
+    "solve_svd_normalized": {
+      "reproj_rmse_px": 1.674681548904669e-13,
+      "reproj_max_px": 2.1946455620253149e-13,
+      "H_distance_to_truth": 5.620510767512844e-16
+    },
+    "solve_svd_raw": {
+      "reproj_rmse_px": 9.748063471543837e-10,
+      "reproj_max_px": 1.3421901620463129e-09,
+      "H_distance_to_truth": 7.334489730768278e-12
+    },
+    "solve_8dof": {
+      "reproj_rmse_px": 7.200427881773428e-09,
+      "reproj_max_px": 1.0466320362897736e-08,
+      "H_distance_to_truth": 3.1677269398989813e-11
+    },
+    "consistent_8dof": true,
+    "cond_M_8dof": 1085088.135810942,
+    "H_svd_vs_8dof_distance": 3.167782270979309e-11,
+    "cond_A_raw": 1085080.7122101726,
+    "cond_A_normalized": 3.5915970268813533,
+    "H_truth_h33": 0.013286688405272008
+  },
+  "exp2": {
+    "name": "exp2_归一化影响",
+    "rows": [
+      {
+        "normalize": false,
+        "cond_A": 1085080.7122101726,
+        "reproj_rmse_px": 9.748063471543837e-10,
+        "reproj_max_px": 1.3421901620463129e-09,
+        "H_distance_to_truth": 7.334489730768278e-12
+      },
+      {
+        "normalize": true,
+        "cond_A": 3.5915970268813533,
+        "reproj_rmse_px": 1.674681548904669e-13,
+        "reproj_max_px": 2.1946455620253149e-13,
+        "H_distance_to_truth": 5.620510767512844e-16
+      }
+    ]
+  },
+  "exp3": {
+    "name": "exp3_h33为0的反例",
+    "truth_H_2_2": 0.0,
+    "truth_det": -0.00016084219360895378,
+    "solve_svd": {
+      "reproj_rmse_px": 2.9825872419757155e-13,
+      "reproj_max_px": 4.687428401686771e-13,
+      "H_distance_to_truth": 6.959154539756591e-13
+    },
+    "solve_svd_h33_component": 9.81216632160166e-16,
+    "solve_8dof": {
+      "reproj_rmse_px": 1.103594032775313,
+      "reproj_max_px": 2.1724218612937283,
+      "H_distance_to_truth": 1.414213562373043
+    },
+    "cond_M_8dof": 2.031059537620857e+17,
+    "linear_residual_8dof": 6.487515597835534,
+    "consistent_8dof": false,
+    "h33_normalization_error": "H[2,2] ≈ 0：该 H 把源点原点映到无穷远，无法用 h33 归一化"
+  },
+  "exp4": {
+    "name": "exp4_n大于4加噪声",
+    "trials": 50,
+    "rows": [
+      {
+        "sigma_px": 0.0,
+        "n_points": 4,
+        "reproj_rmse_px_mean": 1.2753782711311533e-13,
+        "H_distance_mean": 7.235792728723715e-14,
+        "H_distance_std": 3.063704182227412e-13
+      },
+      {
+        "sigma_px": 0.0,
+        "n_points": 5,
+        "reproj_rmse_px_mean": 1.4683773478567754e-13,
+        "H_distance_mean": 3.758016296017946e-15,
+        "H_distance_std": 5.205613318710368e-15
+      },
+      {
+        "sigma_px": 0.0,
+        "n_points": 6,
+        "reproj_rmse_px_mean": 1.4816824488654445e-13,
+        "H_distance_mean": 1.9693958589624763e-15,
+        "H_distance_std": 1.3577773165901786e-15
+      },
+      {
+        "sigma_px": 0.0,
+        "n_points": 8,
+        "reproj_rmse_px_mean": 1.596935133714128e-13,
+        "H_distance_mean": 2.8617815697246294e-15,
+        "H_distance_std": 2.7420140487685138e-15
+      },
+      {
+        "sigma_px": 0.0,
+        "n_points": 12,
+        "reproj_rmse_px_mean": 1.5931039900391034e-13,
+        "H_distance_mean": 2.015486742063284e-15,
+        "H_distance_std": 1.5060881707177093e-15
+      },
+      {
+        "sigma_px": 0.0,
+        "n_points": 20,
+        "reproj_rmse_px_mean": 1.761178378822308e-13,
+        "H_distance_mean": 2.6207065649420867e-15,
+        "H_distance_std": 1.863977455290525e-15
+      },
+      {
+        "sigma_px": 0.0,
+        "n_points": 40,
+        "reproj_rmse_px_mean": 1.824975787197932e-13,
+        "H_distance_mean": 2.410929206589605e-15,
+        "H_distance_std": 1.4142661376117073e-15
+      },
+      {
+        "sigma_px": 0.5,
+        "n_points": 4,
+        "reproj_rmse_px_mean": 1.2771470630096903e-13,
+        "H_distance_mean": 0.13344955520811896,
+        "H_distance_std": 0.2397000627718215
+      },
+      {
+        "sigma_px": 0.5,
+        "n_points": 5,
+        "reproj_rmse_px_mean": 0.2675308910737289,
+        "H_distance_mean": 0.03908422480384353,
+        "H_distance_std": 0.05276863355572682
+      },
+      {
+        "sigma_px": 0.5,
+        "n_points": 6,
+        "reproj_rmse_px_mean": 0.40345856128643964,
+        "H_distance_mean": 0.020234488160347893,
+        "H_distance_std": 0.018571449214839886
+      },
+      {
+        "sigma_px": 0.5,
+        "n_points": 8,
+        "reproj_rmse_px_mean": 0.4475077057403517,
+        "H_distance_mean": 0.010724142273622924,
+        "H_distance_std": 0.008116439468803019
+      },
+      {
+        "sigma_px": 0.5,
+        "n_points": 12,
+        "reproj_rmse_px_mean": 0.5841288551858252,
+        "H_distance_mean": 0.005532042227876525,
+        "H_distance_std": 0.004828705476735812
+      },
+      {
+        "sigma_px": 0.5,
+        "n_points": 20,
+        "reproj_rmse_px_mean": 0.641108942546831,
+        "H_distance_mean": 0.004685061646681904,
+        "H_distance_std": 0.0030858454928361836
+      },
+      {
+        "sigma_px": 0.5,
+        "n_points": 40,
+        "reproj_rmse_px_mean": 0.6755043251482441,
+        "H_distance_mean": 0.003448547015521247,
+        "H_distance_std": 0.002871957855734135
+      },
+      {
+        "sigma_px": 2.0,
+        "n_points": 4,
+        "reproj_rmse_px_mean": 2.412238673773518e-13,
+        "H_distance_mean": 0.22732374289934193,
+        "H_distance_std": 0.2515503548154244
+      },
+      {
+        "sigma_px": 2.0,
+        "n_points": 5,
+        "reproj_rmse_px_mean": 1.2073291726983504,
+        "H_distance_mean": 0.09712346220787586,
+        "H_distance_std": 0.13265972516184937
+      },
+      {
+        "sigma_px": 2.0,
+        "n_points": 6,
+        "reproj_rmse_px_mean": 1.5042272803563153,
+        "H_distance_mean": 0.06860029388115463,
+        "H_distance_std": 0.10246192696614446
+      },
+      {
+        "sigma_px": 2.0,
+        "n_points": 8,
+        "reproj_rmse_px_mean": 1.9834997882614325,
+        "H_distance_mean": 0.06573065151894855,
+        "H_distance_std": 0.09283491047536789
+      },
+      {
+        "sigma_px": 2.0,
+        "n_points": 12,
+        "reproj_rmse_px_mean": 2.3279780339242873,
+        "H_distance_mean": 0.03467220829491033,
+        "H_distance_std": 0.04570283563477514
+      },
+      {
+        "sigma_px": 2.0,
+        "n_points": 20,
+        "reproj_rmse_px_mean": 2.442688174523674,
+        "H_distance_mean": 0.023928353187403818,
+        "H_distance_std": 0.015003802419875794
+      },
+      {
+        "sigma_px": 2.0,
+        "n_points": 40,
+        "reproj_rmse_px_mean": 2.67627918214834,
+        "H_distance_mean": 0.014158989241974652,
+        "H_distance_std": 0.009259649820900624
+      }
+    ]
+  },
+  "exp5": [
+    {
+      "name": "exp5_管线验证_synth_oblique",
+      "target_size": [
+        495,
+        652
+      ],
+      "corner_reproj_rmse_px": 1.1262601523366562e-13,
+      "H_rect_vs_truth_inv_distance": 4.710664856133116e-15,
+      "line_preservation": {
+        "horizontal": {
+          "truth_max_dev_px": 9.023920938738518e-14,
+          "via_solved_H_max_dev_px": 2.755652699980681e-13
+        },
+        "vertical": {
+          "truth_max_dev_px": 1.293529763723296e-13,
+          "via_solved_H_max_dev_px": 9.649117027589455e-14
+        },
+        "diagonal": {
+          "truth_max_dev_px": 1.502743080523385e-13,
+          "via_solved_H_max_dev_px": 1.328485044138956e-13
+        }
+      },
+      "psnr_rect_vs_cv2": 59.28271974714654,
+      "psnr_rect_vs_truth_H": 270.866211196663,
+      "psnr_nearest_vs_bilinear": 25.168439059198175,
+      "noise_sigma_px": 2.0,
+      "psnr_rect_vs_reference_full": 26.29170098843548,
+      "psnr_rect_vs_reference_inner": 25.85590131330394,
+      "valid_ratio": 1.0,
+      "matrix_info_oblique": {
+        "shape": [
+          820,
+          700
+        ],
+        "dtype": "uint8",
+        "min": 0.0,
+        "max": 255.0,
+        "mean": 239.52073,
+        "median": 254.0,
+        "std": 53.497676
+      },
+      "matrix_info_rectified": {
+        "shape": [
+          652,
+          495
+        ],
+        "dtype": "float64",
+        "min": 0.0,
+        "max": 255.00000000000006,
+        "mean": 230.147714,
+        "median": 253.63179229668833,
+        "std": 63.126985
+      }
+    },
+    {
+      "name": "exp5_管线验证_synth_oblique_hard",
+      "target_size": [
+        473,
+        624
+      ],
+      "corner_reproj_rmse_px": 2.0681802897114273e-13,
+      "H_rect_vs_truth_inv_distance": 1.0991335309126418e-15,
+      "line_preservation": {
+        "horizontal": {
+          "truth_max_dev_px": 7.969265132281844e-14,
+          "via_solved_H_max_dev_px": 1.0748125341586882e-13
+        },
+        "vertical": {
+          "truth_max_dev_px": 3.079431139441569e-14,
+          "via_solved_H_max_dev_px": 8.94044063297394e-14
+        },
+        "diagonal": {
+          "truth_max_dev_px": 9.641885298072836e-14,
+          "via_solved_H_max_dev_px": 1.4980020323162847e-13
+        }
+      },
+      "psnr_rect_vs_cv2": 59.22814487497945,
+      "psnr_rect_vs_truth_H": 271.263259760456,
+      "psnr_nearest_vs_bilinear": 24.438686826479703,
+      "noise_sigma_px": 4.0,
+      "psnr_rect_vs_reference_full": 23.51468578798901,
+      "psnr_rect_vs_reference_inner": 23.84489435403285,
+      "valid_ratio": 1.0,
+      "matrix_info_oblique": {
+        "shape": [
+          800,
+          720
+        ],
+        "dtype": "uint8",
+        "min": 0.0,
+        "max": 255.0,
+        "mean": 242.366373,
+        "median": 254.0,
+        "std": 46.180011
+      },
+      "matrix_info_rectified": {
+        "shape": [
+          624,
+          473
+        ],
+        "dtype": "float64",
+        "min": 0.0,
+        "max": 255.00000000000006,
+        "mean": 229.574241,
+        "median": 252.61280510255463,
+        "std": 62.266039
+      }
+    },
+    {
+      "name": "exp5_管线验证_synth_oblique_clean",
+      "target_size": [
+        689,
+        910
+      ],
+      "corner_reproj_rmse_px": 2.440931115859514e-13,
+      "H_rect_vs_truth_inv_distance": 2.443775349965306e-16,
+      "line_preservation": {
+        "horizontal": {
+          "truth_max_dev_px": 1.9651111465035554e-13,
+          "via_solved_H_max_dev_px": 2.7314169271174197e-13
+        },
+        "vertical": {
+          "truth_max_dev_px": 9.439237122639564e-14,
+          "via_solved_H_max_dev_px": 1.2658458813152026e-13
+        },
+        "diagonal": {
+          "truth_max_dev_px": 2.559055819754116e-13,
+          "via_solved_H_max_dev_px": 2.0657092504785914e-13
+        }
+      },
+      "psnr_rect_vs_cv2": 65.75305759839428,
+      "psnr_rect_vs_truth_H": 268.7891599343241,
+      "psnr_nearest_vs_bilinear": 27.146056890338354,
+      "noise_sigma_px": 0.0,
+      "psnr_rect_vs_reference_full": 30.227934229956205,
+      "psnr_rect_vs_reference_inner": 30.070471737200787,
+      "valid_ratio": 1.0,
+      "matrix_info_oblique": {
+        "shape": [
+          1100,
+          900
+        ],
+        "dtype": "uint8",
+        "min": 0.0,
+        "max": 255.0,
+        "mean": 238.779093,
+        "median": 255.0,
+        "std": 56.485874
+      },
+      "matrix_info_rectified": {
+        "shape": [
+          910,
+          689
+        ],
+        "dtype": "float64",
+        "min": 0.0,
+        "max": 255.00000000000006,
+        "mean": 231.019541,
+        "median": 255.0,
+        "std": 64.630479
+      }
+    }
+  ]
+}

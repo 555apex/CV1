@@ -1,0 +1,189 @@
+{
+  "name": "synth_oblique",
+  "input_image": "data/oblique/synth_oblique.png",
+  "corners_file": "data/corners/synth_oblique.json",
+  "preprocess": {
+    "orig_size_WH": [
+      700,
+      820
+    ],
+    "downsample_scale": 0.8536585365853658,
+    "size_after_preprocess_WH": [
+      598,
+      700
+    ],
+    "resolution_after_preprocess": "598 x 700"
+  },
+  "corners_in_processed_coords": [
+    [
+      49.45278351324508,
+      40.975609756097704
+    ],
+    [
+      534.7164222551193,
+      84.42771443295752
+    ],
+    [
+      548.1081920965111,
+      559.8498894649989
+    ],
+    [
+      204.86930171728022,
+      659.0243902439025
+    ]
+  ],
+  "corners_order": "tl, tr, br, bl (左上→右上→右下→左下)",
+  "degenerate_check": [],
+  "target": {
+    "size_mode": "estimated_from_quad",
+    "size_WH": [
+      422,
+      556
+    ],
+    "target_corners": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        421.0,
+        0.0
+      ],
+      [
+        421.0,
+        555.0
+      ],
+      [
+        0.0,
+        555.0
+      ]
+    ]
+  },
+  "H": {
+    "normalized_frobenius": [
+      [
+        0.01845344242742866,
+        -0.004640361507850547,
+        -0.722432451164857
+      ],
+      [
+        -0.0016912043980075412,
+        0.01888700227840635,
+        -0.6902716698511946
+      ],
+      [
+        -1.558111115544475e-05,
+        -9.34866669326685e-06,
+        0.029912095461284274
+      ]
+    ],
+    "h33_normalized": [
+      [
+        0.6169224236166689,
+        -0.155133280911618,
+        -24.15185028076396
+      ],
+      [
+        -0.05653914819162353,
+        0.6314168896275459,
+        -23.076673807243786
+      ],
+      [
+        -0.000520896677921199,
+        -0.0003125380067527193,
+        1.0
+      ]
+    ],
+    "det": 9.797514670305348e-06,
+    "diagnosis": {
+      "A_shape": [
+        8,
+        9
+      ],
+      "cond_A": 3.5909146522975637,
+      "sigma_8_over_sigma_9": 1.2380826304822234,
+      "singular_values": [
+        3.6808616791918665,
+        3.5239153694275487,
+        2.827037817185708,
+        2.2756767993272025,
+        1.9048399688335398,
+        1.7241499391585515,
+        1.2690947436746385,
+        1.0250485003414804
+      ],
+      "cond_H": 2233.914075384298,
+      "det_H": 9.797514670305348e-06
+    }
+  },
+  "accuracy": {
+    "corner_reproj_rmse_px": 1.0889838300129868e-13,
+    "corner_reproj_per_point_px": [
+      1.4532118898420303e-13,
+      6.280143637998245e-14,
+      1.1368683772161603e-13,
+      9.72032192413279e-14
+    ],
+    "H_vs_no_normalization_distance": 2.3744517113144596e-12,
+    "H_vs_8dof_distance": 2.5117869419642493e-12,
+    "rmse_8dof_px": 3.1650676330698156e-10,
+    "consistent_8dof": true,
+    "cond_M_8dof": 820216.4937390559,
+    "H_vs_truth_distance": 4.475465418352441e-15,
+    "H_original_coords": [
+      [
+        0.5266410933313027,
+        -0.1324308495586983,
+        -24.15185028076396
+      ],
+      [
+        -0.04826512650504448,
+        0.5390144179747343,
+        -23.076673807243786
+      ],
+      [
+        -0.0004446678957863893,
+        -0.0002668007374718335,
+        1.0
+      ]
+    ],
+    "note": "H_vs_truth_distance 为齐次尺度与符号无关的相对距离"
+  },
+  "matrix_info": {
+    "oblique_gray": {
+      "shape": [
+        700,
+        598
+      ],
+      "dtype": "uint8",
+      "min": 0.0,
+      "max": 255.0,
+      "mean": 239.536245,
+      "median": 254.0,
+      "std": 51.438354
+    },
+    "rectified_gray": {
+      "shape": [
+        556,
+        422
+      ],
+      "dtype": "float64",
+      "min": 0.0,
+      "max": 255.00000000000006,
+      "mean": 230.157799,
+      "median": 253.49290050650941,
+      "std": 60.425657
+    },
+    "valid_pixel_ratio": 1.0
+  },
+  "outputs": {
+    "matrix_npy": {
+      "oblique": "output/matrices/synth_oblique_oblique_gray.npy",
+      "rectified": "output/matrices/synth_oblique_rectified_gray.npy"
+    },
+    "preview_csv": {
+      "oblique": "output/preview/synth_oblique_oblique_preview.csv",
+      "rectified": "output/preview/synth_oblique_rectified_preview.csv"
+    }
+  }
+}
