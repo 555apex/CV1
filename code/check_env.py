@@ -62,13 +62,20 @@ def main(argv=None):
     import numpy as np
 
     # 3) 目录结构
+    #    data/ 下的是输入，缺失要报出来；output/ 下的是运行产物，自动补建即可。
     print(f"\n[3] 项目目录：{ROOT}")
-    for rel in ("code", "data", "data/oblique", "data/reference", "data/corners",
-                "output", "output/images", "output/matrices",
-                "output/preview", "output/metrics"):
+    for rel in ("code", "data", "data/oblique", "data/reference", "data/corners"):
         p = os.path.join(ROOT, *rel.split("/"))
         flag = OK if os.path.isdir(p) else "--"
         print(f"    {flag} {rel}")
+    for rel in ("output", "output/images", "output/matrices",
+                "output/preview", "output/metrics"):
+        p = os.path.join(ROOT, *rel.split("/"))
+        if os.path.isdir(p):
+            print(f"    {OK} {rel}")
+        else:
+            os.makedirs(p, exist_ok=True)
+            print(f"    {OK} {rel}  （本次自动创建）")
     for rel in ("第一章加分作业.md", "执行计划.md", "报告.md", "requirements.txt"):
         p = os.path.join(ROOT, rel)
         flag = OK if os.path.isfile(p) else "--"

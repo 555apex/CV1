@@ -30,7 +30,7 @@
 
 | 作业要求 | 本项目对应实现 |
 |---|---|
-| **① 图像预处理**：斜向图片、适当降分辨率、得出像素矩阵、标定四个角点，正视照片角点固定 | 合成 3 组斜视图（含解析真值）+ 支持实拍图交互标定；输出分辨率、像素矩阵（`.npy`）、四角点坐标（`.json`） |
+| **① 图像预处理**：斜向图片、适当降分辨率、得出像素矩阵、标定四个角点，正视照片角点固定 | 合成 3 组斜视图（含解析真值）+ 5 张 SmartDoc 公开样例 + 支持实拍图交互标定；输出分辨率、像素矩阵（`.npy`）、四角点坐标（`.json`） |
 | **② 算法原理解析**：自编程实现射影矩阵求解，由 4 组对应点构造 $\mathbf{A}\vec h=0$（$8\times9$）并求解 | `code/homography.py`：手写 $A$ 构造 + Hartley 归一化 + SVD 齐次求解 + 反归一化；另实现 $h_{33}=1$ 非齐次解作为对照 |
 | **③ 输出要求**：输出分辨率、像素矩阵、四角点坐标与正图象素矩阵 | `output/` 下四类产物齐全，见 [第 7 节](#7-输出说明) |
 
@@ -41,16 +41,18 @@
 | $A$ 矩阵构造、Hartley 归一化与反归一化、SVD 齐次求解全流程、$h_{33}=1$ 非齐次解、$3\times3$ 伴随矩阵求逆、**逆映射 + 双线性插值重采样**、重投影误差与 $H$ 距离 | `numpy.linalg.svd`、`cv2.imread/imwrite/resize/cvtColor/setMouseCallback/绘图` | `cv2.getPerspectiveTransform`、`cv2.findHomography`、`cv2.remap`；`cv2.warpPerspective` 仅用于生成测试数据与独立交叉验证 |
 
 > 核验命令：`grep -rn "getPerspectiveTransform\|findHomography\|remap\|warpPerspective" code/`
+>
 > 结果：前三者完全不出现；`warpPerspective` 只出现在 `synth.py`（造数据）与 `experiments.py`（交叉验证），交付算法路径 `warp.py` / `homography.py` 未使用。
+>
+> 补充说明：`homography.py` 里出现了 `np.linalg.inv`（第 150、180 行），但它求的是**归一化矩阵 $T_d$**（相似变换），**不是 $H$**。$H$ 的求逆是手写伴随矩阵法（`invert_homography`，第 207 行），未调用 `np.linalg.inv`。
 
 ---
 
 ## 2. 快速开始
 
 ```bash
-# 1) 安装依赖（项目内虚拟环境；不要复用旧电脑解释器）
+# 1) 安装依赖（项目内虚拟环境；不要复用其它电脑的解释器）
 py -3.13 -m venv .venv
-.\.venv\Scripts\Activate.ps1     # Windows PowerShell，可选
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 
 # 2) 环境自检（第一个该跑的脚本，会纯数值地验证求解器）
@@ -63,11 +65,19 @@ py -3.13 -m venv .venv
 预期在第 2 步看到：
 
 ```
-[4] 核心算法自检
+[4] 核心算法自检（不读磁盘，纯数值）
     齐次 SVD 重投影 RMSE : 2.050e-13 px
     与构造真值的距离     : 3.391e-15
     [OK] 求解器正常
 ```
+
+顺序跑的三条命令（等价于上面的一键版）：
+
+| 顺序 | 命令 | 得到什么 |
+|---|---|---|
+| 中期① | `python code/main.py --synth` | 3 组合成斜图 + 解析真值 $H_0$ + 角点 json |
+| 中期② | `python code/main.py --batch --max-side 700` | 全部图的正视图、像素矩阵、指标 json |
+| 后期① | `python code/main.py --experiments` | 5 组对照实验 + 11 张实验图 |
 
 **单张图 / 实拍图**
 
@@ -80,21 +90,27 @@ python code/main.py --image data/oblique/my_photo.jpg \
                     --corners data/corners/my_photo.json --max-side 700
 ```
 
-### SmartDoc �������ݲ���
+### SmartDoc 公开数据集样例
 
-��Ŀ�ѷ��� SmartDoc 2017 sample/demo release �� 5 ���������������� reference frame��corner JSON��dewarped �� ground-truth �ο�ͼ�����ڴ�������Ŀ�ʹ����׼��Ŀ���ߴ硣
+项目已放入 SmartDoc 2017 sample/demo release 的 5 张样例（`card01`、`paper01`、`poster01`、`receipt01`、`screen01`），包含 reference frame、角点 JSON、dewarped 参考图与 ground-truth 参考图。
 
 ```bash
-# ���� data/oblique/ �е�ϳ������� SmartDoc �������ݣ����� output/smartdoc_sample/
-.\.venv\Scripts\python.exe code\main.py --batch --max-side 700 --out output\smartdoc_sample
+# ① 与合成数据一起批量处理（输出到 output/）
+.\.venv\Scripts\python.exe code\main.py --batch --max-side 700
 
-# �������� SmartDoc �� dewarped / ground-truth ��ֵ�����ɱ����� JSON��CSV��Markdown
+# ② 与 SmartDoc 的 dewarped / ground-truth 参考图比较，生成报告
 .\.venv\Scripts\python.exe code\evaluate_public_samples.py
 ```
 
-���ص������� `data/PUBLIC_DATA_SOURCES.md`������ `output/smartdoc_sample/metrics/public_analysis.md`��Ҫ�����ǣ�`dewarped PSNR` ����ͬһ reference frame �Ľ���һ���ԣ�`ground-truth PSNR` ����ֻ��Ϊ��������������ܰ���ģ��������������ͬ��Ӱ�������������ܵ�Ӱ�졣
+数据来源与再下载方式见 `data/PUBLIC_DATA_SOURCES.md`，结果见 `output/metrics/public_summary.json` / `.csv` / `public_analysis.md`。
 
-> 在 PyCharm 里操作请见 [PyCharm使用与操作手册.md](PyCharm使用与操作手册.md)，里面有逐步骤的界面操作、6 个运行配置、调试技巧与讲解提纲。
+要点：**`dewarped PSNR`（31~39 dB）才是主要指标**，衡量几何与实现的一致性；`ground-truth PSNR`（7~12 dB）偏低是正常的，因为公开数据集的 ground-truth 来自不同设备与光照，差异主要来自拍摄条件而非矫正算法。
+
+> 在 PyCharm 里操作请见 `PyCharm使用与操作手册.md`——里面有从头到尾的分阶段走查（跑什么 / 出现什么 / 怎么可视化）、7 个运行配置与讲解提纲。
+>
+> 想弄懂代码怎么读，见 `学习计划.md`。
+>
+> 这两份是**本地学习材料，不在本仓库中**（已在 `.gitignore` 里），所以上面的引用是纯文本、没有链接。
 
 ---
 
@@ -102,11 +118,12 @@ python code/main.py --image data/oblique/my_photo.jpg \
 
 ```
 .
-├─ README.md                    本文件
-├─ PyCharm使用与操作手册.md       PyCharm 操作 / 调试 / 讲解指南
-├─ 报告.md                       实验报告（原理推导 + 实验 + 误差分析）
-├─ 执行计划.md                   技术决策、验收指标、执行步骤
-├─ 第一章加分作业.md             作业原文（含校对修正）
+├─ README.md                     本文件
+├─ PyCharm使用与操作手册.md        分阶段全流程走查（跑什么 / 看什么 / 怎么讲）※本地文档，未随仓库分发
+├─ 学习计划.md                    代码阅读路线、核心思想、自测题　※本地文档，未随仓库分发
+├─ 报告.md                        实验报告（原理推导 + 实验 + 误差分析）
+├─ 执行计划.md                    技术决策、验收指标、执行步骤
+├─ 第一章加分作业.md               作业原文（含校对修正）
 ├─ requirements.txt              依赖清单
 ├─ code/
 │  ├─ check_env.py       环境自检 + 求解器最小验证
@@ -114,19 +131,27 @@ python code/main.py --image data/oblique/my_photo.jpg \
 │  ├─ warp.py            ★ 核心：目标尺寸估计 / 逆映射 + 双线性插值 / 共线性度量
 │  ├─ preprocess.py      兼容中文路径读写 / 灰度 / 降采样 / 角点读写 / 矩阵导出 / PSNR
 │  ├─ synth.py           合成文档图 + 解析真值 H0 + 斜视图生成 + 噪声注入
-│  ├─ experiments.py     4 组对照实验 + 管线验证 + 出图
+│  ├─ experiments.py     5 组对照实验 + 管线验证 + 出图
 │  ├─ main.py            端到端 CLI（--synth / --experiments / --batch / 单张）
+│  ├─ evaluate_public_samples.py  SmartDoc 公开样例评估（输出 PSNR 对比表）
+│  ├─ fetch_smartdoc_sample.py    公开数据集分块下载助手（支持断点续传）
 │  └─ pick_corners.py    鼠标交互角点标定
+├─ tests/
+│  └─ test_regression.py 6 条依赖极轻的回归测试
 ├─ data/
+│  ├─ PUBLIC_DATA_SOURCES.md  公开数据集来源与放置约定
 │  ├─ reference/         正向文档图 doc_gray.png + <名称>_H0.json（解析真值）
-│  ├─ oblique/           斜视图（合成 3 张；实拍照片放这里）
+│  │                     + SmartDoc 的 <名称>_dewarped.png / <名称>_ground_truth.png
+│  ├─ oblique/           斜视图（合成 3 张 + SmartDoc 5 张；实拍照片放这里）
 │  └─ corners/           <名称>.json 四角点坐标
-└─ output/
-   ├─ images/            斜图（含角点）、正视图、最近邻对照、512×512、实验图
-   ├─ matrices/          *.npy 完整像素矩阵（已 .gitignore，可重新生成）
-   ├─ preview/           *.csv 降采样数值表（已 .gitignore）
-   └─ metrics/           experiments.json + 每张图的 run.json
+└─ output/               ★ 唯一的输出目录（合成数据与公开样例都在这里）
+   ├─ images/            斜图（含角点）、正视图、最近邻对照、512×512、11 张实验图
+   ├─ matrices/          *.npy 完整像素矩阵（已 .gitignore，可用 --batch 重新生成）
+   ├─ preview/           *.csv 16×16 降采样数值表（已 .gitignore，同上）
+   └─ metrics/           experiments.json + 每张图的 <名称>_run.json + public_summary.*
 ```
+
+> `data/_download/`（469 MB 原始压缩包与其解压副本）不进仓库，需要时用 `code/fetch_smartdoc_sample.py` 重新下载。
 
 ---
 
@@ -148,6 +173,7 @@ python code/main.py --image data/oblique/my_photo.jpg \
 | 与"真值 $H$ 重采样"的一致性 | $\approx270$ dB | 数值上与解析真值不可区分 |
 | 直线保持性（网格映射最大偏离） | $\sim10^{-13}$ px | 射影变换把直线映为直线 |
 | Hartley 归一化的效果 | $\kappa(A)$：$1.09\times10^{6}\to3.59$ | 精度提升约 3 个量级 |
+| SmartDoc 公开样例（同一帧 dewarped 参考图） | 31.4 ~ 39.4 dB | 5 张样例的几何一致性 |
 
 ### 4.3 直线保持性验证
 
@@ -281,7 +307,21 @@ $\kappa(A)$ 下降 5 个量级，重投影误差下降约 3 个量级。
 | `synth_oblique_hard`（σ=4） | 473×624 | $2.07\times10^{-13}$ | $1.1\times10^{-15}$ | 59.23 dB | 23.51 dB |
 | `synth_oblique_clean`（无噪声） | 689×910 | $2.44\times10^{-13}$ | $2.4\times10^{-16}$ | 65.75 dB | 30.23 dB |
 
+> 上表的"目标尺寸"是 `exp5` 在**原图坐标系**的四角上估计出来的；`main.py --batch --max-side 700` 会先降采样再估计，所以 `output/metrics/synth_oblique_run.json` 里是 423×556。两者都对，只是输入坐标系不同。
+
 "PSNR vs 参考图"偏低不是算法误差，而是**信息损失链**造成的：斜视图中文档被以 `INTER_LINEAR` 降到 $0.79\sim0.83$ 倍，对 1 像素细线产生混叠；噪声本身的 PSNR 上限也只有 42.1 dB（σ=2）/ 36.1 dB（σ=4）。无噪声用例达到 30.23 dB，验证了该归因。
+
+### 6.6 SmartDoc 公开样例
+
+| 样例 | 目标尺寸 | 角点重投影 RMSE | dewarped PSNR | ground-truth PSNR |
+|---|---|---|---|---|
+| `smartdoc_card01` | 638×1010 | $2.81\times10^{-13}$ px | 39.45 dB | 11.83 dB |
+| `smartdoc_paper01` | 2480×3508 | $1.22\times10^{-12}$ px | 34.44 dB | 11.33 dB |
+| `smartdoc_poster01` | 2167×3072 | $2.12\times10^{-12}$ px | 33.48 dB | 7.77 dB |
+| `smartdoc_receipt01` | 1797×5770 | $2.14\times10^{-12}$ px | 31.35 dB | 8.79 dB |
+| `smartdoc_screen01` | 3000×2250 | $1.10\times10^{-12}$ px | 36.80 dB | 8.54 dB |
+
+角点重投影误差到 $10^{-12}\sim10^{-13}$ 量级，说明公开数据集的角点标注同样精确可解；`dewarped PSNR` 衡量的是与同一帧参考图的一致性。公开样例没有解析真值 $H_0$，所以用图像一致性代替 $H$ 距离。
 
 ---
 
@@ -293,20 +333,20 @@ $\kappa(A)$ 下降 5 个量级，重投影误差下降约 3 个量级。
 |---|---|---|
 | 预处理后分辨率 | 598 × 700 | `output/metrics/synth_oblique_run.json` → `preprocess` |
 | 斜图象素矩阵 | `(700,598)` uint8，min/max/mean = 0/255/239.54 | `output/matrices/synth_oblique_oblique_gray.npy` |
-| 四个角点坐标 | $P_0$(49.453, 40.976) $P_1$(534.716, 84.428) $P_2$(548.108, 559.850) $P_3$(204.869, 659.024) | 同上 json → `corners_in_processed_coords` |
-| 射影矩阵 $H$ | $\kappa(A)=3.591$，$\det H=9.798\times10^{-6}$ | json → `H` |
-| **正图象素矩阵** | `(556,422)` float64，min/max/mean = 0/255/230.16 | `output/matrices/synth_oblique_rectified_gray.npy` |
+| 四个角点坐标 | $P_0$(49.416, 40.902) $P_1$(535.036, 84.355) $P_2$(548.438, 559.777) $P_3$(204.947, 658.951) | 同上 json → `corners_in_processed_coords` |
+| 射影矩阵 $H$ | $\kappa(A)=3.584$，$\det H=9.824\times10^{-6}$，角点重投影 RMSE $1.594\times10^{-13}$ px，与真值 $H$ 距离 $3.696\times10^{-15}$ | json → `H` / `accuracy` |
+| **正图象素矩阵** | `(556,423)` float64，min/max/mean = 0/255/230.18 | `output/matrices/synth_oblique_rectified_gray.npy` |
 
 ```
 H (h33 归一化) =
-[[ 6.169218e-01, -1.551325e-01, -2.415185e+01],
- [-5.653876e-02,  6.314167e-01, -2.307667e+01],
- [-5.207653e-04, -3.127878e-04,  1.000000e+00]]
+[[ 6.179710e-01, -1.555110e-01, -2.417705e+01],
+ [-5.650100e-02,  6.314550e-01, -2.303599e+01],
+ [-5.210000e-04, -3.130000e-04,  1.000000e+00]]
 ```
 
 想看数值而不想加载 `.npy`：`output/preview/*_preview.csv` 是 16×16 的降采样数值表，表格软件可直接打开。
 
-> `output/matrices/` 与 `output/preview/` 已加入 `.gitignore`（可由 `python code/main.py --batch` 重新生成）。
+> `output/matrices/` 与 `output/preview/` 已加入 `.gitignore`（可用 `python code/main.py --batch` 重新生成）。注意 SmartDoc 样例的目标尺寸很大（如 1797×5770），它们的 `.npy` 单个可达 80 MB，跑完一次 `--batch` 约需 260 MB 磁盘——这些文件不进版本库。
 
 ---
 
@@ -315,12 +355,14 @@ H (h33 归一化) =
 | 文档 | 内容 | 适合谁看 |
 |---|---|---|
 | [README.md](README.md) | 项目总览、快速开始、核心结果 | 第一次接触本项目 |
-| [报告.md](报告.md) | 完整实验报告：原理推导、实现说明、4 组实验、误差分析、结论与局限 | 交作业 / 答辩 |
-| [PyCharm使用与操作手册.md](PyCharm使用与操作手册.md) | PyCharm 界面级操作、6 个运行配置、调试技巧、代码阅读路线、**10 分钟讲解提纲 + 预判问答** | 需要动手跑、需要讲 |
+| `PyCharm使用与操作手册.md` | **从头到尾的操作走查**：前期准备 → 中期主流程 → 后期实验，每步跑什么 / 出现什么 / 怎么可视化；7 个运行配置、10 分钟讲解提纲 | 需要动手跑、需要讲　※本地文档 |
+| `学习计划.md` | 代码阅读路线、五大核心思想、分阶段自测题、常见误区 | 想真正读懂代码　※本地文档 |
+| [报告.md](报告.md) | 完整实验报告：原理推导、实现说明、5 组实验、误差分析、结论与局限 | 交作业 / 答辩 |
 | [执行计划.md](执行计划.md) | 技术决策、函数接口、验收指标、执行步骤 | 想了解设计取舍 |
 | [第一章加分作业.md](第一章加分作业.md) | 作业原文（含校对修正） | 对照需求 |
+| [data/PUBLIC_DATA_SOURCES.md](data/PUBLIC_DATA_SOURCES.md) | 公开数据集来源、许可与放置约定 | 想换数据集 |
 
-**推荐阅读顺序**：README → 报告.md 第 2 节（原理）→ `code/homography.py` → PyCharm手册第 5 节（代码阅读路线）→ PyCharm手册第 9 节（讲解提纲）。
+**推荐阅读顺序**：README → 学习计划 阶段 0–1 → `code/homography.py` 的 `build_A` → PyCharm 手册第二部分（跑一遍）→ 学习计划 阶段 2–6 → PyCharm 手册 3.2 节（讲解提纲）。
 
 ---
 
@@ -342,9 +384,10 @@ H (h33 归一化) =
 | 加三次卷积插值 | 仿照 `warp.py` 的 `warp_bilinear` 增加 `warp_bicubic` |
 | 加 RANSAC | 新模块，对 `solve_homography_svd` 做随机采样 + 内点统计 |
 | 接实拍照片 | 照片放 `data/oblique/`，用 `pick_corners.py` 标定后跑单张流程 |
+| 换公开数据集 | 见 `data/PUBLIC_DATA_SOURCES.md`；把图放 `data/oblique/`、角点放 `data/corners/` 即可 |
 
 ---
 
 ## 许可
 
-课程作业项目，仅用于学习与教学。
+课程作业项目，仅用于学习与教学。SmartDoc 2017 样例的版权与许可归上游所有，见 `data/PUBLIC_DATA_SOURCES.md`。

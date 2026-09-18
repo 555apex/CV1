@@ -14,12 +14,18 @@ env/
 # ---- 工具/会话数据 ----
 .workbuddy/
 
-# ---- public dataset download cache (large, reproducible, not committed) ----
+# ---- 本地学习材料：只在本人机器上使用，不进公开仓库 ----
+PyCharm使用与操作手册.md
+学习计划.md
+
+# ---- 公开数据集原始下载缓存（469 MB，可用 code/fetch_smartdoc_sample.py 重下）----
 data/_download/
 
-# ---- 可再生的运行产物（用 `python code/main.py --batch` 重新生成）----
-output/matrices/
-output/preview/
+# ---- 可再生的运行产物：像素矩阵与降采样数值表 ----
+# 用 `python code/main.py --batch --max-side 700` 即可重新生成。
+# 注意必须用 **/ 通配，否则子目录里的副本会被误提交（曾把 260 MB 的 .npy 提交进仓库）。
+output/**/matrices/
+output/**/preview/
 
 # ---- 其他 ----
 *.log

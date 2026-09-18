@@ -45,7 +45,7 @@ def evaluate(out_root: str, corners_dir: str, reference_dir: str) -> dict:
         with open(run_path, "r", encoding="utf-8") as handle:
             run = json.load(handle)
         rect = _read_gray(rect_path)
-        dewarped_path = os.path.join(reference_dir, f"{name.replace('smartdoc_', 'smartdoc_')}_dewarped.png")
+        dewarped_path = os.path.join(reference_dir, f"{name}_dewarped.png")
         ground_truth_path = os.path.join(reference_dir, f"{name}_ground_truth.png")
         dewarped = _read_gray(dewarped_path)
         ground_truth = _read_gray(ground_truth_path)
@@ -138,7 +138,7 @@ def _write_markdown(summary: dict, path: str) -> None:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--out", default=os.path.join(ROOT, "output", "smartdoc_sample"))
+    parser.add_argument("--out", default=os.path.join(ROOT, "output"))
     parser.add_argument("--corners", default=os.path.join(ROOT, "data", "corners"))
     parser.add_argument("--reference", default=os.path.join(ROOT, "data", "reference"))
     args = parser.parse_args(argv)
