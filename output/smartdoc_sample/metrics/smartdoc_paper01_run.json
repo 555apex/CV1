@@ -1,0 +1,196 @@
+{
+  "name": "smartdoc_paper01",
+  "input_image": "data/oblique/smartdoc_paper01.png",
+  "corners_file": "data/corners/smartdoc_paper01.json",
+  "preprocess": {
+    "orig_size_WH": [
+      1920,
+      1080
+    ],
+    "downsample_scale": 0.3645833333333333,
+    "scale_xy": [
+      0.3645833333333333,
+      0.3648148148148148
+    ],
+    "size_after_preprocess_WH": [
+      700,
+      394
+    ],
+    "resolution_after_preprocess": "700 x 394"
+  },
+  "corners_in_processed_coords": [
+    [
+      71.2412225405375,
+      327.45032676414206
+    ],
+    [
+      93.87035083770752,
+      9.787220001220703
+    ],
+    [
+      547.764840443929,
+      3.0177741403932923
+    ],
+    [
+      550.188616434733,
+      346.0184077510127
+    ]
+  ],
+  "corner_metadata": {
+    "order": "tl, tr, br, bl",
+    "coordinate_system": "SmartDoc image pixels, origin at top-left, x right, y down",
+    "source": "SmartDoc 2017 sample dataset v1.0",
+    "source_url": "https://github.com/smartdoc2017-competition/sample_dataset/releases/tag/1.0",
+    "license": "See upstream release terms; attribution to CVC-UAB and L3i-ULR retained",
+    "image_size": [
+      1920,
+      1080
+    ],
+    "target_size_WH": [
+      2480,
+      3508
+    ],
+    "reference_frame_id": 0,
+    "reference_ground_truth": "data/reference/smartdoc_paper01_ground_truth.png",
+    "evaluation_note": "No analytic H0; compare rectification output with the supplied ground-truth image."
+  },
+  "corners_order": "tl, tr, br, bl (左上→右上→右下→左下)",
+  "degenerate_check": [],
+  "target": {
+    "size_mode": "metadata",
+    "size_WH": [
+      2480,
+      3508
+    ],
+    "target_corners": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        2479.0,
+        0.0
+      ],
+      [
+        2479.0,
+        3507.0
+      ],
+      [
+        0.0,
+        3507.0
+      ]
+    ]
+  },
+  "H": {
+    "normalized_frobenius": [
+      [
+        0.00011399467478187254,
+        -0.0029403928409833784,
+        0.9547114766003796
+      ],
+      [
+        0.00314591704610121,
+        0.0002241033312741854,
+        -0.29750168543003136
+      ],
+      [
+        6.471486144280669e-08,
+        6.97832486938033e-08,
+        0.00037106952876498153
+      ]
+    ],
+    "h33_normalized": [
+      [
+        0.30720570120989793,
+        -7.924102123852074,
+        2572.864120042177
+      ],
+      [
+        8.477971922328578,
+        0.6039389222285676,
+        -801.7410818403667
+      ],
+      [
+        0.0001744009044833054,
+        0.0001880597658505148,
+        1.0
+      ]
+    ],
+    "det": 3.6966801260879197e-09,
+    "diagnosis": {
+      "A_shape": [
+        8,
+        9
+      ],
+      "rank": 8,
+      "nullity": 1,
+      "condition_number_nonzero": 3.619401563711788,
+      "condition_number_full": Infinity,
+      "cond_A": 3.619401563711788,
+      "sigma_8_over_sigma_9": Infinity,
+      "singular_values": [
+        3.690659953588084,
+        3.5518323036432635,
+        2.7275417917219387,
+        2.307592237597038,
+        1.8404803859427807,
+        1.6417817267833534,
+        1.3764264880026174,
+        1.0196878927695492
+      ],
+      "cond_H": 840865.1702746066,
+      "det_H": 3.6966801260879197e-09
+    }
+  },
+  "accuracy": {
+    "corner_reproj_rmse_px": 1.2181404357308444e-12,
+    "corner_reproj_per_point_px": [
+      3.9397052080229587e-13,
+      1.6789016238058082e-12,
+      1.016845989170083e-12,
+      1.3883678494116135e-12
+    ],
+    "H_vs_no_normalization_distance": 1.164728321388215e-11,
+    "H_vs_8dof_distance": 9.740855081321693e-13,
+    "rmse_8dof_px": 2.3216602337758918e-07,
+    "consistent_8dof": true,
+    "cond_M_8dof": 5062262.9725186005
+  },
+  "matrix_info": {
+    "oblique_gray": {
+      "shape": [
+        394,
+        700
+      ],
+      "dtype": "uint8",
+      "min": 8.0,
+      "max": 255.0,
+      "mean": 134.038564,
+      "median": 159.0,
+      "std": 69.313425
+    },
+    "rectified_gray": {
+      "shape": [
+        3508,
+        2480
+      ],
+      "dtype": "float64",
+      "min": 8.273998642407413,
+      "max": 255.00000000000006,
+      "mean": 189.729696,
+      "median": 198.06417575021072,
+      "std": 29.556976
+    },
+    "valid_pixel_ratio": 1.0
+  },
+  "outputs": {
+    "matrix_npy": {
+      "oblique": "matrices/smartdoc_paper01_oblique_gray.npy",
+      "rectified": "matrices/smartdoc_paper01_rectified_gray.npy"
+    },
+    "preview_csv": {
+      "oblique": "preview/smartdoc_paper01_oblique_preview.csv",
+      "rectified": "preview/smartdoc_paper01_rectified_preview.csv"
+    }
+  }
+}

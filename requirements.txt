@@ -1,5 +1,6 @@
 # 第一章加分作业 —— 依赖清单
-# 本文件记录的版本是本项目实际跑通并验证过的组合（Python 3.13.12 64-bit, Windows）
+# 本文件是可复现依赖清单；目标平台为 Windows 64-bit + Python 3.13。
+# 不要依赖某台电脑的全局 Python 或 Workbuddy 内置环境，请安装到项目 .venv。
 #
 # 安装（国内镜像）：
 #   python -m pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple

@@ -1,0 +1,18 @@
+{
+  "order": "tl, tr, br, bl",
+  "coordinate_system": "SmartDoc image pixels, origin at top-left, x right, y down",
+  "corners": [
+    [196.2759246826172, 898.4501342773438],
+    [258.34439086914062, 27.698471069335938],
+    [1503.3121337890625, 9.142629623413086],
+    [1509.960205078125, 949.347412109375]
+  ],
+  "source": "SmartDoc 2017 sample dataset v1.0",
+  "source_url": "https://github.com/smartdoc2017-competition/sample_dataset/releases/tag/1.0",
+  "license": "See upstream release terms; attribution to CVC-UAB and L3i-ULR retained",
+  "image_size": [1920, 1080],
+  "target_size_WH": [2480, 3508],
+  "reference_frame_id": 0,
+  "reference_ground_truth": "data/reference/smartdoc_paper01_ground_truth.png",
+  "evaluation_note": "No analytic H0; compare rectification output with the supplied ground-truth image."
+}

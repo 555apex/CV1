@@ -42,6 +42,18 @@ from warp import estimate_target_size, target_corners, warp_bilinear, warp_neare
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
+def _path_label(path, base=ROOT):
+    """Return a stable relative path when possible, otherwise an absolute path."""
+    path = os.path.abspath(path)
+    base = os.path.abspath(base)
+    try:
+        if os.path.commonpath([path, base]) == base:
+            return os.path.relpath(path, base).replace("\\", "/")
+    except ValueError:
+        pass
+    return path.replace("\\", "/")
+
+
 # ------------------------------------------------------------------ 单张流程
 
 def run_one(image_path, corners_path, out_root, max_side=700, fixed_size=None,
@@ -61,17 +73,29 @@ def run_one(image_path, corners_path, out_root, max_side=700, fixed_size=None,
     W_ob, H_ob = prep["size"]
 
     # 角点：文件里存的是原图坐标，降采样后按 scale 换算
-    corners_orig = pp.load_corners(corners_path)
-    corners = pp.scale_corners(corners_orig, scale)
-    bad = pp.check_corners_in_image(corners, prep["size"])
+    corners_orig, corner_meta = pp.load_corners_meta(corners_path)
+    corners = pp.resize_corners(corners_orig, prep["orig_size"], prep["size"])
+    quad_issues = pp.validate_quad(corners)
+    if quad_issues:
+        raise ValueError("invalid corner quadrilateral: " + "; ".join(quad_issues))
+    # Pixel-center resize coordinates can legitimately land half a pixel
+    # outside the new image when an original corner lies exactly on the edge.
+    bad = pp.check_corners_in_image(corners, prep["size"], tol=0.5)
     if bad:
         raise ValueError(f"角点越界（{bad}）。请确认角点是否在降采样后的坐标系中。")
     degenerate = check_point_configuration(corners)
 
     # 目标尺寸与固定角点
+    metadata_size = corner_meta.get("target_size_WH")
     if fixed_size:
         W_t, H_t = int(fixed_size[0]), int(fixed_size[1])
         size_mode = "fixed"
+    elif metadata_size is not None:
+        if (not isinstance(metadata_size, (list, tuple)) or len(metadata_size) != 2 or
+                any(int(v) != v or int(v) <= 0 for v in metadata_size)):
+            raise ValueError("target_size_WH metadata must contain two positive integers")
+        W_t, H_t = int(metadata_size[0]), int(metadata_size[1])
+        size_mode = "metadata"
     else:
         W_t, H_t = estimate_target_size(corners)
         size_mode = "estimated_from_quad"
@@ -119,15 +143,17 @@ def run_one(image_path, corners_path, out_root, max_side=700, fixed_size=None,
 
     metrics = {
         "name": name,
-        "input_image": os.path.relpath(image_path, ROOT).replace("\\", "/"),
-        "corners_file": os.path.relpath(corners_path, ROOT).replace("\\", "/"),
+        "input_image": _path_label(image_path),
+        "corners_file": _path_label(corners_path),
         "preprocess": {
             "orig_size_WH": list(prep["orig_size"]),
             "downsample_scale": scale,
+            "scale_xy": list(prep["scale_xy"]),
             "size_after_preprocess_WH": [W_ob, H_ob],
             "resolution_after_preprocess": f"{W_ob} x {H_ob}",
         },
         "corners_in_processed_coords": np.asarray(corners).tolist(),
+        "corner_metadata": {k: v for k, v in corner_meta.items() if k != "corners"},
         "corners_order": "tl, tr, br, bl (左上→右上→右下→左下)",
         "degenerate_check": degenerate,
         "target": {
@@ -157,12 +183,12 @@ def run_one(image_path, corners_path, out_root, max_side=700, fixed_size=None,
         },
         "outputs": {
             "matrix_npy": {
-                "oblique": f"output/matrices/{name}_oblique_gray.npy",
-                "rectified": f"output/matrices/{name}_rectified_gray.npy",
+                "oblique": os.path.relpath(os.path.join(mat_dir, f"{name}_oblique_gray.npy"), out_root).replace("\\", "/"),
+                "rectified": os.path.relpath(os.path.join(mat_dir, f"{name}_rectified_gray.npy"), out_root).replace("\\", "/"),
             },
             "preview_csv": {
-                "oblique": f"output/preview/{name}_oblique_preview.csv",
-                "rectified": f"output/preview/{name}_rectified_preview.csv",
+                "oblique": os.path.relpath(os.path.join(pre_dir, f"{name}_oblique_preview.csv"), out_root).replace("\\", "/"),
+                "rectified": os.path.relpath(os.path.join(pre_dir, f"{name}_rectified_preview.csv"), out_root).replace("\\", "/"),
             },
         },
     }
@@ -174,7 +200,11 @@ def run_one(image_path, corners_path, out_root, max_side=700, fixed_size=None,
         # 真值方面：文档四角经 S 映射到目标四角，而 S ∘ H0^{-1} ∘ H0 = S，
         # 故斜视图(原图坐标) → 正视图 的真值即 H_truth = S @ H0^{-1}
         H0, doc_size = truth
-        T_ds = np.array([[scale, 0.0, 0.0], [0.0, scale, 0.0], [0.0, 0.0, 1.0]])
+        # Match the pixel-center affine transform used by cv2.resize and
+        # pp.resize_corners: p_processed = T_resize @ p_original.
+        sx, sy = prep["scale_xy"]
+        tx, ty = 0.5 * sx - 0.5, 0.5 * sy - 0.5
+        T_ds = np.array([[sx, 0.0, tx], [0.0, sy, ty], [0.0, 0.0, 1.0]])
         H_in_orig = H @ T_ds
         sx = (W_t - 1) / (doc_size[0] - 1)
         sy = (H_t - 1) / (doc_size[1] - 1)
@@ -241,16 +271,21 @@ def main(argv=None):
     args = ap.parse_args(argv)
     args.image = _resolve(args.image)
     args.corners = _resolve(args.corners)
-    args.out = _resolve(args.out) or args.out
+    args.out = os.path.abspath(args.out or os.path.join(ROOT, "output"))
 
     max_side = None if (args.max_side is None or args.max_side <= 0) else args.max_side
     fixed = None
     if args.fixed_size:
-        w, h = args.fixed_size.lower().split("x")
-        fixed = (int(w), int(h))
+        try:
+            w, h = args.fixed_size.lower().split("x")
+            fixed = (int(w), int(h))
+            if fixed[0] <= 0 or fixed[1] <= 0:
+                raise ValueError
+        except ValueError as e:
+            raise SystemExit("--fixed-size must be a positive WxH value, e.g. 512x512") from e
 
-    if args.synth or args.batch or args.experiments:
-        dataset = sy.build_dataset(ROOT)
+    if args.synth:
+        dataset = sy.build_dataset(ROOT, force=True)
         print(f"[合成数据] 参考图: {dataset['doc_path']}")
         for it in dataset["items"]:
             print(f"           {os.path.basename(it['image'])}  角点: {it['corners']}")
@@ -270,7 +305,10 @@ def main(argv=None):
 
     if args.batch:
         pairs = []
-        for img_path in sorted(glob.glob(os.path.join(ROOT, "data", "oblique", "*.png"))):
+        image_paths = []
+        for ext in ("*.png", "*.jpg", "*.jpeg", "*.bmp"):
+            image_paths.extend(glob.glob(os.path.join(ROOT, "data", "oblique", ext)))
+        for img_path in sorted(image_paths):
             stem = os.path.splitext(os.path.basename(img_path))[0]
             for ext in (".json", ".txt"):
                 cp = os.path.join(ROOT, "data", "corners", stem + ext)
@@ -312,8 +350,9 @@ def _print_run(m):
         print("      [" + ", ".join(f"{v:12.6f}" for v in row) + "]")
     a = m["accuracy"]
     print(f"  角点重投影RMSE  : {a['corner_reproj_rmse_px']:.3e} px")
-    print(f"  cond(A)         : {m['H']['diagnosis']['cond_A']:.3e}"
-          f"   σ8/σ9 = {m['H']['diagnosis']['sigma_8_over_sigma_9']:.3e}")
+    diag = m["H"]["diagnosis"]
+    print(f"  cond(A)非零谱    : {diag['condition_number_nonzero']:.3e}"
+          f"   rank/nullity = {diag['rank']}/{diag['nullity']}")
     print(f"  斜图矩阵        : {m['matrix_info']['oblique_gray']['shape']} "
           f"min/max/mean = {m['matrix_info']['oblique_gray']['min']:.0f}/"
           f"{m['matrix_info']['oblique_gray']['max']:.0f}/{m['matrix_info']['oblique_gray']['mean']:.2f}")

@@ -1,0 +1,196 @@
+{
+  "name": "smartdoc_receipt01",
+  "input_image": "data/oblique/smartdoc_receipt01.png",
+  "corners_file": "data/corners/smartdoc_receipt01.json",
+  "preprocess": {
+    "orig_size_WH": [
+      1920,
+      1080
+    ],
+    "downsample_scale": 0.3645833333333333,
+    "scale_xy": [
+      0.3645833333333333,
+      0.3648148148148148
+    ],
+    "size_after_preprocess_WH": [
+      700,
+      394
+    ],
+    "resolution_after_preprocess": "700 x 394"
+  },
+  "corners_in_processed_coords": [
+    [
+      122.67999998728433,
+      249.3021126076027
+    ],
+    [
+      118.64437135060628,
+      169.92625562879775
+    ],
+    [
+      373.0887908935547,
+      160.37651977539062
+    ],
+    [
+      376.01756286621094,
+      239.5742222538701
+    ]
+  ],
+  "corner_metadata": {
+    "order": "tl, tr, br, bl",
+    "coordinate_system": "SmartDoc image pixels, origin at top-left, x right, y down",
+    "source": "SmartDoc 2017 sample dataset v1.0",
+    "source_url": "https://github.com/smartdoc2017-competition/sample_dataset/releases/tag/1.0",
+    "license": "See upstream release terms; attribution to CVC-UAB and L3i-ULR retained",
+    "image_size": [
+      1920,
+      1080
+    ],
+    "target_size_WH": [
+      1797,
+      5770
+    ],
+    "reference_frame_id": 0,
+    "reference_ground_truth": "data/reference/smartdoc_receipt01_ground_truth.png",
+    "evaluation_note": "No analytic H0; compare rectification output with the supplied ground-truth image."
+  },
+  "corners_order": "tl, tr, br, bl (左上→右上→右下→左下)",
+  "degenerate_check": [],
+  "target": {
+    "size_mode": "metadata",
+    "size_WH": [
+      1797,
+      5770
+    ],
+    "target_corners": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        1796.0,
+        0.0
+      ],
+      [
+        1796.0,
+        5769.0
+      ],
+      [
+        0.0,
+        5769.0
+      ]
+    ]
+  },
+  "H": {
+    "normalized_frobenius": [
+      [
+        -0.00013873275061427947,
+        -0.0036129330876582275,
+        0.917731585306701
+      ],
+      [
+        0.0036104565064759477,
+        -0.00018356288956862174,
+        -0.3971681880027462
+      ],
+      [
+        -2.06724674559246e-09,
+        -8.5985983972528e-09,
+        0.0001616949994418939
+      ]
+    ],
+    "h33_normalized": [
+      [
+        -0.857990358966753,
+        -22.344123814147743,
+        5675.69552846001
+      ],
+      [
+        22.32880743954848,
+        -1.1352415980840904,
+        -2456.2799676774857
+      ],
+      [
+        -1.2784852671559197e-05,
+        -5.317788692867252e-05,
+        1.0
+      ]
+    ],
+    "det": 2.0819902441216685e-09,
+    "diagnosis": {
+      "A_shape": [
+        8,
+        9
+      ],
+      "rank": 8,
+      "nullity": 1,
+      "condition_number_nonzero": 8.06080447516561,
+      "condition_number_full": Infinity,
+      "cond_A": 8.06080447516561,
+      "sigma_8_over_sigma_9": Infinity,
+      "singular_values": [
+        4.2774060559853915,
+        3.8681560609995134,
+        2.6997958441441314,
+        2.0450281538472033,
+        1.1136582038649836,
+        1.018514993262841,
+        0.8433005320128896,
+        0.5306425765770124
+      ],
+      "cond_H": 1744232.6218137215,
+      "det_H": 2.0819902441216685e-09
+    }
+  },
+  "accuracy": {
+    "corner_reproj_rmse_px": 2.140742830148102e-12,
+    "corner_reproj_per_point_px": [
+      1.393896760361649e-12,
+      2.094196380483858e-12,
+      1.8331451766013172e-12,
+      2.9397434517738025e-12
+    ],
+    "H_vs_no_normalization_distance": 8.157574337169247e-12,
+    "H_vs_8dof_distance": 5.1766364301594505e-11,
+    "rmse_8dof_px": 1.7767024234494962e-07,
+    "consistent_8dof": true,
+    "cond_M_8dof": 34059107.77864441
+  },
+  "matrix_info": {
+    "oblique_gray": {
+      "shape": [
+        394,
+        700
+      ],
+      "dtype": "uint8",
+      "min": 7.0,
+      "max": 223.0,
+      "mean": 111.374431,
+      "median": 112.0,
+      "std": 26.478548
+    },
+    "rectified_gray": {
+      "shape": [
+        5770,
+        1797
+      ],
+      "dtype": "float64",
+      "min": 35.17151616752864,
+      "max": 222.9640463265275,
+      "mean": 157.355395,
+      "median": 160.04112426812458,
+      "std": 15.400852
+    },
+    "valid_pixel_ratio": 1.0
+  },
+  "outputs": {
+    "matrix_npy": {
+      "oblique": "matrices/smartdoc_receipt01_oblique_gray.npy",
+      "rectified": "matrices/smartdoc_receipt01_rectified_gray.npy"
+    },
+    "preview_csv": {
+      "oblique": "preview/smartdoc_receipt01_oblique_preview.csv",
+      "rectified": "preview/smartdoc_receipt01_rectified_preview.csv"
+    }
+  }
+}

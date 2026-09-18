@@ -16,6 +16,9 @@ import numpy as np
 
 
 def target_corners(W, H):
+    if int(W) != W or int(H) != H or W <= 0 or H <= 0:
+        raise ValueError("target dimensions must be positive integers")
+    W, H = int(W), int(H)
     """正视图四角点（固定）：左上、右上、右下、左下"""
     return np.array([[0.0, 0.0], [W - 1.0, 0.0],
                      [W - 1.0, H - 1.0], [0.0, H - 1.0]], dtype=np.float64)
@@ -28,7 +31,11 @@ def estimate_target_size(quad, min_side=1):
         W = (|p1-p0| + |p2-p3|) / 2
         H = (|p3-p0| + |p2-p1|) / 2
     """
-    p = np.asarray(quad, dtype=np.float64).reshape(4, 2)
+    p = np.asarray(quad, dtype=np.float64)
+    if p.shape != (4, 2) or not np.isfinite(p).all():
+        raise ValueError("quad must be a finite (4,2) array")
+    if min_side < 1:
+        raise ValueError("min_side must be positive")
     w_top = float(np.linalg.norm(p[1] - p[0]))
     w_bot = float(np.linalg.norm(p[2] - p[3]))
     h_left = float(np.linalg.norm(p[3] - p[0]))
@@ -41,6 +48,11 @@ def estimate_target_size(quad, min_side=1):
 def _backward_map(H_inv, W, H):
     """为每个目标像素反算源坐标，返回 (xs, ys, 齐次分量非零掩膜)"""
     H_inv = np.asarray(H_inv, dtype=np.float64)
+    if H_inv.shape != (3, 3) or not np.isfinite(H_inv).all():
+        raise ValueError("H_inv must be a finite 3x3 matrix")
+    if int(W) != W or int(H) != H or W <= 0 or H <= 0:
+        raise ValueError("target dimensions must be positive integers")
+    W, H = int(W), int(H)
     uu, vv = np.meshgrid(np.arange(W, dtype=np.float64),
                          np.arange(H, dtype=np.float64))
     w = H_inv[2, 0] * uu + H_inv[2, 1] * vv + H_inv[2, 2]
@@ -55,6 +67,8 @@ def _backward_map(H_inv, W, H):
 def warp_bilinear(img, H_inv, W, H, fill=0):
     """逆映射 + 双线性插值。返回 (输出图像, 有效像素掩膜)"""
     img = np.asarray(img, dtype=np.float64)
+    if img.ndim not in (2, 3) or img.size == 0 or not np.isfinite(img).all():
+        raise ValueError("img must be a non-empty finite 2D or 3D array")
     squeeze = (img.ndim == 2)
     if squeeze:
         img = img[:, :, None]
@@ -90,6 +104,8 @@ def warp_bilinear(img, H_inv, W, H, fill=0):
 def warp_nearest(img, H_inv, W, H, fill=0):
     """逆映射 + 最近邻插值（仅作插值质量对照）"""
     img = np.asarray(img, dtype=np.float64)
+    if img.ndim not in (2, 3) or img.size == 0 or not np.isfinite(img).all():
+        raise ValueError("img must be a non-empty finite 2D or 3D array")
     squeeze = (img.ndim == 2)
     if squeeze:
         img = img[:, :, None]

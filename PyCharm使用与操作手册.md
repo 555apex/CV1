@@ -4,6 +4,8 @@
 > 目标：让你在 PyCharm 里**跑通、看懂、讲清**这套代码
 > 环境实测：Windows 11 + Python 3.13 + numpy 2.5.3 + opencv-python 5.0.0 + matplotlib 3.11.2
 
+> 迁移说明：当前 PC 使用本机 Python 3.13 创建项目内 `.venv`；PyCharm 2025.2.2 已安装。不要引用旧 PC 的外部解释器路径。
+
 ---
 
 ## 0. 先看这张图：你在这里做什么
@@ -26,7 +28,7 @@
 `File → Open` → 选择目录：
 
 ```
-C:\Users\Lenovo\Desktop\ComputerVision - 副本
+<项目根目录>\ComputerVision - 副本
 ```
 
 打开后左侧 Project 面板应该能看到 `code/`、`data/`、`output/`、`报告.md` 等。
@@ -40,7 +42,7 @@ C:\Users\Lenovo\Desktop\ComputerVision - 副本
 选择已有解释器（**推荐，零下载**，因为依赖已经装好了）：
 
 ```
-C:\Users\Lenovo\.workbuddy\binaries\python\envs\default\Scripts\python.exe
+<项目根目录>\ComputerVision - 副本\.venv\Scripts\python.exe
 ```
 
 配置成功后，Interpreter 下方的包列表里应能看到 `numpy`、`opencv-python`、`matplotlib` 三个包。
@@ -49,14 +51,27 @@ C:\Users\Lenovo\.workbuddy\binaries\python\envs\default\Scripts\python.exe
 <summary>方案 B：想自己建一个干净的虚拟环境（点开）</summary>
 
 1. `Add Interpreter → Add Local Interpreter → Virtualenv Environment → New`
-2. Location 填 `C:\Users\Lenovo\Desktop\ComputerVision - 副本\.venv`，Base interpreter 选 Python 3.13
+2. Location 填 `<项目根目录>\ComputerVision - 副本\.venv`，Base interpreter 选 Python 3.13
 3. 打开 PyCharm 底部 `Terminal`，执行（国内镜像，几十秒）：
 
 ```
-python -m pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
 </details>
+
+### 插件与终端说明
+
+项目不依赖 Workbuddy 或其他外部 PyCharm 插件。只需确保 PyCharm 自带的 Python 支持已启用；Markdown/图片预览属于可选功能，不影响代码运行。
+
+新 PC 上不要复用旧电脑的解释器路径，统一在项目根目录执行：
+
+```powershell
+py -3.13 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe code\check_env.py
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
 
 ### 步骤 3：跑环境自检（第一个该跑的东西）
 
@@ -82,9 +97,9 @@ python -m pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/s
 | 字段 | 值 |
 |---|---|
 | Name | `all`（随便起） |
-| Script path | `C:\Users\Lenovo\Desktop\ComputerVision - 副本\code\main.py` |
+| Script path | `$PROJECT_ROOT\code\main.py` |
 | Parameters | `--synth --experiments --batch --max-side 700` |
-| Working directory | `C:\Users\Lenovo\Desktop\ComputerVision - 副本\code` |
+| Working directory | `$PROJECT_ROOT` |
 | Python interpreter | 选步骤 2 配好的那个 |
 
 点 Run（`Shift+F10`），约 10~20 秒跑完。
@@ -160,7 +175,7 @@ homography.reprojection_error(H, corners, tc)  # 重投影误差
 `Tools → Python Console`（或右下角 `Python Console`），先切到项目根目录，然后：
 
 ```python
-import sys; sys.path.insert(0, r'C:\Users\Lenovo\Desktop\ComputerVision - 副本\code')
+import sys; sys.path.insert(0, r'<项目根目录>\ComputerVision - 副本\code')
 import numpy as np, homography as hm
 
 # 用 4 组点解一个 H，并检查
@@ -372,7 +387,7 @@ main.py:47  run_one()                         ← 从这里开始，一个函数
 按顺序打勾，任何一步失败就停下排查：
 
 - [ ] PyCharm 打开项目根目录 `ComputerVision - 副本`
-- [ ] 解释器指向 `...\envs\default\Scripts\python.exe`（或自建 venv 并 `pip install -r requirements.txt`）
+- [ ] 解释器指向项目内 `.venv\Scripts\python.exe`（或使用等价的 Python 3.13 虚拟环境）
 - [ ] File Encodings 设为 UTF-8
 - [ ] 跑 `code/check_env.py` → 第 4 步 RMSE 为 $10^{-13}$ 量级
 - [ ] 建 6 个运行配置（见第 2 节）

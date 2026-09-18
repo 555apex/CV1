@@ -104,6 +104,8 @@ def normalize_h(H, mode="fro"):
         mode='h33' 用 h33 归一化（便于阅读、与真值直接对比）
     """
     H = np.asarray(H, dtype=np.float64)
+    if H.shape != (3, 3) or not np.isfinite(H).all():
+        raise ValueError("H 必须是有限的 3x3 矩阵")
     if mode == "h33":
         if abs(H[2, 2]) < 1e-10:
             raise ValueError("H[2,2] ≈ 0：该 H 把源点原点映到无穷远，无法用 h33 归一化")
@@ -149,7 +151,7 @@ def solve_homography_svd(src, dst, normalize=True):
     return normalize_h(H, "fro")
 
 
-def solve_homography_8dof(src, dst):
+def solve_homography_8dof(src, dst, normalize=False):
     """
     对照实现：固定 h33 = 1，把 A h = 0 改写为 8 元非齐次方程组 M x = b
 
@@ -160,13 +162,25 @@ def solve_homography_8dof(src, dst):
     """
     src = to_points(src)
     dst = to_points(dst)
-    A = build_A(src, dst)
+    Ts = Td = np.eye(3)
+    if normalize:
+        src_n, Ts = normalize_points(src)
+        dst_n, Td = normalize_points(dst)
+    else:
+        src_n, dst_n = src, dst
+
+    A = build_A(src_n, dst_n)
     M, b = A[:, :8], -A[:, 8]
 
     cond_M = float(np.linalg.cond(M))
     x, *_ = np.linalg.lstsq(M, b, rcond=None)
     lin_res = float(np.linalg.norm(M @ x - b))
     H = np.append(x, 1.0).reshape(3, 3)
+    if normalize:
+        H = np.linalg.inv(Td) @ H @ Ts
+        # The eight-DOF gauge is only meaningful when the resulting H[2,2]
+        # is non-zero. Keep the failure explicit for the h33=0 counterexample.
+        H = normalize_h(H, "h33")
     info = {
         "cond_M": cond_M,
         "linear_residual": lin_res,
@@ -178,6 +192,8 @@ def solve_homography_8dof(src, dst):
 def apply_homography(H, pts):
     """按 H 映射点集：p' ~ H p。落在无穷远的点返回 NaN"""
     H = np.asarray(H, dtype=np.float64)
+    if H.shape != (3, 3) or not np.isfinite(H).all():
+        raise ValueError("H 必须是有限的 3x3 矩阵")
     p = np.asarray(pts, dtype=np.float64).reshape(-1, 2)
     ph = np.hstack([p, np.ones((p.shape[0], 1))])
     q = (H @ ph.T).T
@@ -191,6 +207,8 @@ def apply_homography(H, pts):
 def invert_homography(H):
     """手写伴随矩阵法求 3×3 逆（不调用 np.linalg.inv）"""
     H = np.asarray(H, dtype=np.float64)
+    if H.shape != (3, 3) or not np.isfinite(H).all():
+        raise ValueError("H 必须是有限的 3x3 矩阵")
     a, b, c = H[0]
     d, e, f = H[1]
     g, h, i = H[2]
@@ -221,18 +239,42 @@ def homography_distance(H1, H2):
     """齐次尺度与整体符号都无关的相对距离：min(‖Ĥ1-Ĥ2‖_F, ‖Ĥ1+Ĥ2‖_F)"""
     A1 = np.asarray(H1, dtype=np.float64)
     A2 = np.asarray(H2, dtype=np.float64)
-    A1 = A1 / np.linalg.norm(A1)
-    A2 = A2 / np.linalg.norm(A2)
+    if A1.shape != (3, 3) or A2.shape != (3, 3):
+        raise ValueError("待比较的 H 必须都是 3x3 矩阵")
+    n1, n2 = np.linalg.norm(A1), np.linalg.norm(A2)
+    if n1 < EPS or n2 < EPS or not np.isfinite(A1).all() or not np.isfinite(A2).all():
+        raise ValueError("待比较的 H 必须是有限的非零矩阵")
+    A1 = A1 / n1
+    A2 = A2 / n2
     return float(min(np.linalg.norm(A1 - A2), np.linalg.norm(A1 + A2)))
 
 
 def diagnose(A, H=None):
     """数值诊断：A 的奇异值谱与条件数；可选给出 H 的行列式与条件数"""
-    s = np.linalg.svd(np.asarray(A, dtype=np.float64), compute_uv=False)
+    A = np.asarray(A, dtype=np.float64)
+    if A.ndim != 2 or not np.isfinite(A).all():
+        raise ValueError("A 必须是有限的二维矩阵")
+    s = np.linalg.svd(A, compute_uv=False)
+    tol = np.finfo(np.float64).eps * max(A.shape) * (s[0] if s.size else 0.0)
+    rank = int(np.sum(s > tol)) if s.size else 0
+    nonzero = s[s > tol]
+    cond_nonzero = float(nonzero[0] / nonzero[-1]) if nonzero.size else float("inf")
+    # For an underdetermined 8x9 DLT matrix, NumPy returns only eight
+    # singular values; the ninth value is the exact null-space singular value.
+    cond_full = float("inf") if A.shape[1] > A.shape[0] or rank < min(A.shape) else cond_nonzero
     info = {
-        "A_shape": list(np.shape(A)),
-        "cond_A": float(s[0] / s[-1]) if s[-1] > 0 else float("inf"),
-        "sigma_8_over_sigma_9": float(s[-2] / s[-1]) if s[-1] > 0 else float("inf"),
+        "A_shape": list(A.shape),
+        "rank": rank,
+        "nullity": int(A.shape[1] - rank),
+        "condition_number_nonzero": cond_nonzero,
+        "condition_number_full": cond_full,
+        # Backwards-compatible alias: this is deliberately the condition
+        # number over non-zero singular values, not the full rank-deficient A.
+        "cond_A": cond_nonzero,
+        "sigma_8_over_sigma_9": (
+            float("inf") if A.shape[1] > A.shape[0]
+            else (float(s[-2] / s[-1]) if s.size >= 2 and s[-1] > 0 else float("inf"))
+        ),
         "singular_values": [float(v) for v in s],
     }
     if H is not None:

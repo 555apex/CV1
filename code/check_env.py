@@ -110,7 +110,7 @@ def main(argv=None):
         print(f"    -- data/oblique 为空")
     if "--synth" in argv:
         import synth as sy
-        ds = sy.build_dataset(ROOT)
+        ds = sy.build_dataset(ROOT, force=True)
         print(f"    {OK} 已生成合成数据：{len(ds['items'])} 组斜视图 + 解析真值 H0")
         for it in ds["items"]:
             print(f"        - {os.path.basename(it['image'])}")

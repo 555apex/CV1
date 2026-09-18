@@ -177,7 +177,7 @@ def add_gaussian_noise(img, sigma=3.0, rng=None):
 
 # ------------------------------------------------------------------ 数据集构建
 
-def build_dataset(root, configs=None, max_side_hint=700):
+def build_dataset(root, configs=None, max_side_hint=700, force=False):
     """
     生成整套合成数据，落盘到
         data/reference/doc_gray.png      正向文档图
@@ -203,8 +203,42 @@ def build_dataset(root, configs=None, max_side_hint=700):
     for d in (ref_dir, obl_dir, cor_dir):
         os.makedirs(d, exist_ok=True)
 
-    doc = make_document_image()
     doc_path = os.path.join(ref_dir, "doc_gray.png")
+    expected = []
+    for cfg in configs:
+        expected.extend([
+            os.path.join(obl_dir, cfg["name"] + ".png"),
+            os.path.join(cor_dir, cfg["name"] + ".json"),
+            os.path.join(ref_dir, f"{cfg['name']}_H0.json"),
+        ])
+    if not force:
+        missing = [p for p in [doc_path, *expected] if not os.path.isfile(p)]
+        if missing:
+            raise FileNotFoundError(
+                "合成数据不存在，请先显式运行 python code/main.py --synth；缺失："
+                + ", ".join(missing))
+        doc = _imread(doc_path, cv2.IMREAD_GRAYSCALE)
+        index = []
+        for cfg in configs:
+            name = cfg["name"]
+            obl_path = os.path.join(obl_dir, name + ".png")
+            corners_path = os.path.join(cor_dir, name + ".json")
+            with open(os.path.join(ref_dir, f"{name}_H0.json"), "r", encoding="utf-8") as f:
+                info = json.load(f)
+            with open(corners_path, "r", encoding="utf-8") as f:
+                corner_obj = json.load(f)
+            index.append({
+                "name": name,
+                "image": obl_path,
+                "corners": corners_path,
+                "canvas_size": corner_obj.get("image_size", list(cfg["canvas_size"])),
+                "doc_size": info.get("doc_size", [doc.shape[1], doc.shape[0]]),
+                "noise": float(cfg.get("noise") or 0.0),
+                "H0": np.asarray(info["H0"], dtype=np.float64),
+            })
+        return {"doc": doc, "doc_path": doc_path, "items": index}
+
+    doc = make_document_image()
     _imwrite(doc_path, doc)
 
     index = []
@@ -255,3 +289,14 @@ def _imwrite(path, img):
     if not ok:
         raise IOError(f"编码失败：{path}")
     buf.tofile(path)
+
+
+def _imread(path, flags=cv2.IMREAD_COLOR):
+    """Read an image through bytes so non-ASCII Windows paths work."""
+    if not os.path.isfile(path):
+        raise FileNotFoundError(path)
+    data = np.fromfile(path, dtype=np.uint8)
+    img = cv2.imdecode(data, flags)
+    if img is None:
+        raise ValueError(f"无法读取图像：{path}")
+    return img

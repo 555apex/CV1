@@ -1,0 +1,120 @@
+{
+  "dataset": "SmartDoc 2017 sample/demo release v1.0",
+  "evaluation_scope": {
+    "dewarped": "primary geometry/implementation consistency; same source frame after upstream perspective undo",
+    "ground_truth": "secondary end-to-end image comparison; includes source-frame blur, illumination, and content differences",
+    "analytic_H0": "not available for public samples"
+  },
+  "samples": [
+    {
+      "name": "smartdoc_card01",
+      "target_size_WH": [
+        638,
+        1010
+      ],
+      "corner_reproj_rmse_px": 2.806559792040188e-13,
+      "valid_pixel_ratio": 1.0,
+      "condition_number_nonzero": 3.8999908638961336,
+      "dewarped": {
+        "mse_gray": 7.38597566653217,
+        "mae_gray": 1.3308901579813153,
+        "psnr_gray_db": 39.44672488355579
+      },
+      "ground_truth": {
+        "mse_gray": 4263.698836090505,
+        "mae_gray": 45.32239051491356,
+        "psnr_gray_db": 11.832938399064316
+      },
+      "reference_dewarped": "data/reference/smartdoc_card01_dewarped.png",
+      "reference_ground_truth": "data/reference/smartdoc_card01_ground_truth.png"
+    },
+    {
+      "name": "smartdoc_paper01",
+      "target_size_WH": [
+        2480,
+        3508
+      ],
+      "corner_reproj_rmse_px": 1.2181404357308444e-12,
+      "valid_pixel_ratio": 1.0,
+      "condition_number_nonzero": 3.619401563711788,
+      "dewarped": {
+        "mse_gray": 23.388635882958766,
+        "mae_gray": 2.55678495236694,
+        "psnr_gray_db": 34.440754680788395
+      },
+      "ground_truth": {
+        "mse_gray": 4790.151134963402,
+        "mae_gray": 62.26483038768529,
+        "psnr_gray_db": 11.32731144729933
+      },
+      "reference_dewarped": "data/reference/smartdoc_paper01_dewarped.png",
+      "reference_ground_truth": "data/reference/smartdoc_paper01_ground_truth.png"
+    },
+    {
+      "name": "smartdoc_poster01",
+      "target_size_WH": [
+        2167,
+        3072
+      ],
+      "corner_reproj_rmse_px": 2.118353314434523e-12,
+      "valid_pixel_ratio": 1.0,
+      "condition_number_nonzero": 3.6079980091711565,
+      "dewarped": {
+        "mse_gray": 29.16026050078834,
+        "mae_gray": 2.9213134878287956,
+        "psnr_gray_db": 33.48288961470616
+      },
+      "ground_truth": {
+        "mse_gray": 10876.003722834708,
+        "mae_gray": 99.8593294841659,
+        "psnr_gray_db": 7.766110132942744
+      },
+      "reference_dewarped": "data/reference/smartdoc_poster01_dewarped.png",
+      "reference_ground_truth": "data/reference/smartdoc_poster01_ground_truth.png"
+    },
+    {
+      "name": "smartdoc_receipt01",
+      "target_size_WH": [
+        1797,
+        5770
+      ],
+      "corner_reproj_rmse_px": 2.140742830148102e-12,
+      "valid_pixel_ratio": 1.0,
+      "condition_number_nonzero": 8.06080447516561,
+      "dewarped": {
+        "mse_gray": 47.696528587507196,
+        "mae_gray": 3.657235677795363,
+        "psnr_gray_db": 31.345935891685038
+      },
+      "ground_truth": {
+        "mse_gray": 8586.626638273494,
+        "mae_gray": 90.39483657048287,
+        "psnr_gray_db": 8.792577814515212
+      },
+      "reference_dewarped": "data/reference/smartdoc_receipt01_dewarped.png",
+      "reference_ground_truth": "data/reference/smartdoc_receipt01_ground_truth.png"
+    },
+    {
+      "name": "smartdoc_screen01",
+      "target_size_WH": [
+        3000,
+        2250
+      ],
+      "corner_reproj_rmse_px": 1.1017352795685494e-12,
+      "valid_pixel_ratio": 1.0,
+      "condition_number_nonzero": 3.4883684404385393,
+      "dewarped": {
+        "mse_gray": 13.581470666666666,
+        "mae_gray": 1.778126962962963,
+        "psnr_gray_db": 36.80133560891327
+      },
+      "ground_truth": {
+        "mse_gray": 9098.978729333334,
+        "mae_gray": 90.64974148148148,
+        "psnr_gray_db": 8.540877110858487
+      },
+      "reference_dewarped": "data/reference/smartdoc_screen01_dewarped.png",
+      "reference_ground_truth": "data/reference/smartdoc_screen01_ground_truth.png"
+    }
+  ]
+}

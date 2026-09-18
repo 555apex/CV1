@@ -48,16 +48,16 @@
 ## 2. 快速开始
 
 ```bash
-# 1) 安装依赖（建议虚拟环境）
-python -m venv .venv
-.venv\Scripts\activate          # Windows
-python -m pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+# 1) 安装依赖（项目内虚拟环境；不要复用旧电脑解释器）
+py -3.13 -m venv .venv
+.\.venv\Scripts\Activate.ps1     # Windows PowerShell，可选
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 
 # 2) 环境自检（第一个该跑的脚本，会纯数值地验证求解器）
-python code/check_env.py
+.\.venv\Scripts\python.exe code\check_env.py
 
 # 3) 一键跑通全流程：生成数据 → 对照实验 → 批量矫正
-python code/main.py --synth --experiments --batch --max-side 700
+.\.venv\Scripts\python.exe code\main.py --synth --experiments --batch --max-side 700
 ```
 
 预期在第 2 步看到：
@@ -79,6 +79,20 @@ python code/pick_corners.py --image data/oblique/my_photo.jpg --max-side 700
 python code/main.py --image data/oblique/my_photo.jpg \
                     --corners data/corners/my_photo.json --max-side 700
 ```
+
+### SmartDoc �������ݲ���
+
+��Ŀ�ѷ��� SmartDoc 2017 sample/demo release �� 5 ���������������� reference frame��corner JSON��dewarped �� ground-truth �ο�ͼ�����ڴ�������Ŀ�ʹ����׼��Ŀ���ߴ硣
+
+```bash
+# ���� data/oblique/ �е�ϳ������� SmartDoc �������ݣ����� output/smartdoc_sample/
+.\.venv\Scripts\python.exe code\main.py --batch --max-side 700 --out output\smartdoc_sample
+
+# �������� SmartDoc �� dewarped / ground-truth ��ֵ�����ɱ����� JSON��CSV��Markdown
+.\.venv\Scripts\python.exe code\evaluate_public_samples.py
+```
+
+���ص������� `data/PUBLIC_DATA_SOURCES.md`������ `output/smartdoc_sample/metrics/public_analysis.md`��Ҫ�����ǣ�`dewarped PSNR` ����ͬһ reference frame �Ľ���һ���ԣ�`ground-truth PSNR` ����ֻ��Ϊ��������������ܰ���ģ��������������ͬ��Ӱ�������������ܵ�Ӱ�졣
 
 > 在 PyCharm 里操作请见 [PyCharm使用与操作手册.md](PyCharm使用与操作手册.md)，里面有逐步骤的界面操作、6 个运行配置、调试技巧与讲解提纲。
 

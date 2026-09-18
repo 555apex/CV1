@@ -79,6 +79,7 @@ def load_image(path, max_side=None, color=True):
         "bgr": bgr,
         "gray": gray,
         "scale": scale,
+        "scale_xy": (W / W0, H / H0),
         "orig_size": (W0, H0),
         "size": (W, H),
         "path": path,
@@ -88,6 +89,47 @@ def load_image(path, max_side=None, color=True):
 def scale_corners(corners, scale):
     """把原图坐标系下的角点换算到降采样后的坐标系"""
     return np.asarray(corners, dtype=np.float64).reshape(-1, 2) * float(scale)
+
+
+def resize_corners(corners, orig_size, new_size):
+    """Transform corners using the pixel-center convention of cv2.resize."""
+    p = np.asarray(corners, dtype=np.float64).reshape(-1, 2)
+    W0, H0 = map(float, orig_size)
+    W1, H1 = map(float, new_size)
+    if min(W0, H0, W1, H1) <= 0:
+        raise ValueError("resize dimensions must be positive")
+    out = p.copy()
+    out[:, 0] = (p[:, 0] + 0.5) * (W1 / W0) - 0.5
+    out[:, 1] = (p[:, 1] + 0.5) * (H1 / H0) - 0.5
+    return out
+
+
+def validate_quad(corners, tol=1e-9):
+    """Validate a tl,tr,br,bl quadrilateral and return issue strings."""
+    p = np.asarray(corners, dtype=np.float64)
+    if p.shape != (4, 2):
+        return [f"corners must have shape (4,2), got {p.shape}"]
+    if not np.isfinite(p).all():
+        return ["corners contain NaN/Inf"]
+    issues = []
+    for i in range(4):
+        for j in range(i + 1, 4):
+            if np.linalg.norm(p[i] - p[j]) <= tol:
+                issues.append(f"corner {i} and {j} are coincident or too close")
+    cross = []
+    for i in range(4):
+        a = p[(i + 1) % 4] - p[i]
+        b = p[(i + 2) % 4] - p[(i + 1) % 4]
+        cross.append(float(a[0] * b[1] - a[1] * b[0]))
+    if any(abs(v) <= tol for v in cross):
+        issues.append("quadrilateral has a nearly collinear edge")
+    if cross and not (all(v > tol for v in cross) or all(v < -tol for v in cross)):
+        issues.append("corner order is not a convex, non-self-intersecting polygon")
+    area2 = float(sum(p[i, 0] * p[(i + 1) % 4, 1] -
+                      p[(i + 1) % 4, 0] * p[i, 1] for i in range(4)))
+    if abs(area2) <= tol:
+        issues.append("quadrilateral area is too small")
+    return issues
 
 
 def check_corners_in_image(corners, size, tol=1e-6):
@@ -121,7 +163,21 @@ def load_corners(path):
             raise ValueError(f"角点文件应含 8 个数值，实际 {len(nums)} 个：{path}")
         pts = np.array(nums, dtype=np.float64).reshape(4, 2)
     pts = np.asarray(pts, dtype=np.float64).reshape(4, 2)
+    if not np.isfinite(pts).all():
+        raise ValueError(f"角点文件包含 NaN/Inf：{path}")
     return pts
+
+
+def load_corners_meta(path):
+    """Load corners and retain optional JSON provenance metadata."""
+    pts = load_corners(path)
+    meta = {}
+    if path.lower().endswith(".json"):
+        with open(path, "r", encoding="utf-8") as f:
+            obj = json.load(f)
+        if isinstance(obj, dict):
+            meta = obj
+    return pts, meta
 
 
 def save_corners(path, corners, meta=None):

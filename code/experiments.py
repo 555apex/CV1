@@ -71,7 +71,8 @@ def exp1_equivalence(doc_size, H0):
 
     H_svd = solve_homography_svd(src, dst, normalize=True)
     H_svd_nonorm = solve_homography_svd(src, dst, normalize=False)
-    H_8, info8 = solve_homography_8dof(src, dst)
+    H_8, info8 = solve_homography_8dof(src, dst, normalize=False)
+    H_8_norm, info8_norm = solve_homography_8dof(src, dst, normalize=True)
 
     A_norm, cond_norm = _cond_of_A(src, dst, True)
     A_raw, cond_raw = _cond_of_A(src, dst, False)
@@ -82,9 +83,14 @@ def exp1_equivalence(doc_size, H0):
         "solve_svd_normalized": _score(H_svd, src, dst, H0),
         "solve_svd_raw": _score(H_svd_nonorm, src, dst, H0),
         "solve_8dof": _score(H_8, src, dst, H0),
+        "solve_8dof_normalized": _score(H_8_norm, src, dst, H0),
         "consistent_8dof": info8["consistent"],
+        "consistent_8dof_normalized": info8_norm["consistent"],
         "cond_M_8dof": info8["cond_M"],
+        "cond_M_8dof_normalized": info8_norm["cond_M"],
         "H_svd_vs_8dof_distance": homography_distance(H_svd, H_8),
+        "H_svd_raw_vs_8dof_raw_distance": homography_distance(H_svd_nonorm, H_8),
+        "H_svd_normalized_vs_8dof_normalized_distance": homography_distance(H_svd, H_8_norm),
         "cond_A_raw": cond_raw,
         "cond_A_normalized": cond_norm,
         "H_truth_h33": float(normalize_h(H0, "fro")[2, 2]),
@@ -128,7 +134,7 @@ def exp3_h33_zero():
     dst = apply_homography(H0z, src)
 
     H_svd = solve_homography_svd(src, dst, normalize=True)
-    H_8, info8 = solve_homography_8dof(src, dst)
+    H_8, info8 = solve_homography_8dof(src, dst, normalize=False)
 
     # h33 归一化在此时应当直接失败
     h33_fail = None
@@ -174,12 +180,24 @@ def exp4_noisy_least_squares(doc_size, H0, ns=(4, 5, 6, 8, 12, 20, 40),
                 rmse, _ = reprojection_error(H, src, dst)
                 rmses.append(rmse)
                 dists.append(homography_distance(H, H0))
+            def summary(values):
+                values = np.asarray(values, dtype=np.float64)
+                return {
+                    "mean": float(np.mean(values)),
+                    "std": float(np.std(values)),
+                    "median": float(np.median(values)),
+                    "p025": float(np.percentile(values, 2.5)),
+                    "p975": float(np.percentile(values, 97.5)),
+                }
+
             out.append({
                 "sigma_px": float(sigma),
                 "n_points": int(n),
                 "reproj_rmse_px_mean": float(np.mean(rmses)),
                 "H_distance_mean": float(np.mean(dists)),
                 "H_distance_std": float(np.std(dists)),
+                "reproj_rmse_px_summary": summary(rmses),
+                "H_distance_summary": summary(dists),
             })
     return {"name": "exp4_n大于4加噪声", "trials": trials, "rows": out}
 
